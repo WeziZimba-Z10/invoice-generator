@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Invoice Generator</h1>
+  {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    <p><a href="{% url 'dashboard' %}">Go to dashboard</a></p>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button type="submit">Log out</button>
+    </form>
+  {% else %}
+    <p><a href="{% url 'login' %}">Log in</a> or <a href="{% url 'register' %}">create an account</a></p>
+  {% endif %}
+{% endblock %}
