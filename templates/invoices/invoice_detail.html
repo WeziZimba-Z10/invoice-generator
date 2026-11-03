@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ invoice.number }}{% endblock %}
+
+{% block content %}
+  <h1>Invoice {{ invoice.number }}</h1>
+  <p><a href="{% url 'invoice_list' %}">Back to invoices</a></p>
+
+  <p>
+    <strong>Client:</strong> {{ invoice.client.name }}<br>
+    <strong>Issued:</strong> {{ invoice.issue_date }}<br>
+    <strong>Due:</strong> {{ invoice.due_date }}<br>
+    <strong>Status:</strong> {{ invoice.get_status_display }}
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Unit price</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.items.all %}
+        <tr>
+          <td>{{ item.description }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unit_price }}</td>
+          <td>{{ item.total|floatformat:2 }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Subtotal</td>
+        <td>{{ invoice.subtotal|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td colspan="3">Tax ({{ invoice.tax_rate }}%)</td>
+        <td>{{ invoice.tax_amount|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td colspan="3"><strong>Total</strong></td>
+        <td><strong>{{ invoice.total|floatformat:2 }}</strong></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% if invoice.notes %}
+    <h2>Notes</h2>
+    <p>{{ invoice.notes|linebreaksbr }}</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+  <h1>Invoices</h1>
+  <p>
+    <a href="{% url 'invoice_create' %}">New invoice</a> |
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+  </p>
+
+  {% if invoices %}
+    <table>
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Client</th>
+          <th>Issued</th>
+          <th>Due</th>
+          <th>Status</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in invoices %}
+          <tr>
+            <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
+            <td>{{ invoice.client.name }}</td>
+            <td>{{ invoice.issue_date }}</td>
+            <td>{{ invoice.due_date }}</td>
+            <td>{{ invoice.get_status_display }}</td>
+            <td>{{ invoice.total|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>You have no invoices yet.</p>
+  {% endif %}
+{% endblock %}
