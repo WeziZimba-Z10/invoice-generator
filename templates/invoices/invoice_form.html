@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h2>Line items</h2>
+    {{ formset.management_form }}
+    {{ formset.non_form_errors }}
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Quantity</th>
+          <th>Unit price</th>
+          <th>{% if formset.can_delete %}Delete{% endif %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item_form in formset %}
+          <tr>
+            <td>
+              {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+              {{ item_form.description.errors }}
+              {{ item_form.description }}
+            </td>
+            <td>{{ item_form.quantity.errors }}{{ item_form.quantity }}</td>
+            <td>{{ item_form.unit_price.errors }}{{ item_form.unit_price }}</td>
+            <td>{% if item_form.DELETE %}{{ item_form.DELETE }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>
+      <button type="submit">Save invoice</button>
+      <a href="{% url 'invoice_list' %}">Cancel</a>
+    </p>
+  </form>
+{% endblock %}
