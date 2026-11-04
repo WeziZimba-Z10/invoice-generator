@@ -9,6 +9,15 @@
     <a href="{% url 'dashboard' %}">Dashboard</a>
   </p>
 
+  <p>
+    Show:
+    <a href="{% url 'invoice_list' %}">{% if not current_status %}<strong>All</strong>{% else %}All{% endif %}</a> |
+    <a href="{% url 'invoice_list' %}?status=draft">{% if current_status == 'draft' %}<strong>Draft</strong>{% else %}Draft{% endif %}</a> |
+    <a href="{% url 'invoice_list' %}?status=sent">{% if current_status == 'sent' %}<strong>Sent</strong>{% else %}Sent{% endif %}</a> |
+    <a href="{% url 'invoice_list' %}?status=paid">{% if current_status == 'paid' %}<strong>Paid</strong>{% else %}Paid{% endif %}</a> |
+    <a href="{% url 'invoice_list' %}?status=overdue">{% if current_status == 'overdue' %}<strong>Overdue</strong>{% else %}Overdue{% endif %}</a>
+  </p>
+
   {% if invoices %}
     <table>
       <thead>
@@ -28,13 +37,13 @@
             <td>{{ invoice.client.name }}</td>
             <td>{{ invoice.issue_date }}</td>
             <td>{{ invoice.due_date }}</td>
-            <td>{{ invoice.get_status_display }}</td>
+            <td>{{ invoice.status_label }}</td>
             <td>{{ invoice.total|floatformat:2 }}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   {% else %}
-    <p>You have no invoices yet.</p>
+    <p>No invoices to show.</p>
   {% endif %}
 {% endblock %}

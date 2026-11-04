@@ -1,9 +1,12 @@
 from datetime import date, timedelta
+from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+
+from clients.models import Client
 
 from .forms import InvoiceForm, LineItemEditFormSet, LineItemFormSet
 from .models import Invoice
@@ -16,14 +19,54 @@ def generate_invoice_number(owner):
     return f"INV-{count:04d}"
 
 
+def sum_totals(invoices):
+    return sum((invoice.total for invoice in invoices), Decimal("0.00"))
+
+
+@login_required
+def dashboard(request):
+    today = date.today()
+    invoices = list(
+        Invoice.objects.filter(owner=request.user)
+        .select_related("client")
+        .prefetch_related("items")
+    )
+    outstanding = [i for i in invoices if i.status == Invoice.Status.SENT]
+    overdue = [i for i in outstanding if i.due_date < today]
+    paid = [i for i in invoices if i.status == Invoice.Status.PAID]
+    drafts = [i for i in invoices if i.status == Invoice.Status.DRAFT]
+
+    context = {
+        "outstanding_total": sum_totals(outstanding),
+        "overdue_total": sum_totals(overdue),
+        "paid_total": sum_totals(paid),
+        "draft_count": len(drafts),
+        "overdue_invoices": sorted(overdue, key=lambda i: i.due_date),
+        "recent_invoices": invoices[:5],
+        "client_count": Client.objects.filter(owner=request.user).count(),
+    }
+    return render(request, "dashboard.html", context)
+
+
 @login_required
 def invoice_list(request):
+    status = request.GET.get("status", "")
     invoices = (
         Invoice.objects.filter(owner=request.user)
         .select_related("client")
         .prefetch_related("items")
     )
-    return render(request, "invoices/invoice_list.html", {"invoices": invoices})
+    if status == "overdue":
+        invoices = invoices.filter(
+            status=Invoice.Status.SENT, due_date__lt=date.today()
+        )
+    elif status in Invoice.Status.values:
+        invoices = invoices.filter(status=status)
+    return render(
+        request,
+        "invoices/invoice_list.html",
+        {"invoices": invoices, "current_status": status},
+    )
 
 
 @login_required
