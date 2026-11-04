@@ -18,12 +18,13 @@ from django.contrib import admin
 from django.urls import include, path
 
 from accounts import views as account_views
+from invoices import views as invoice_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("clients/", include("clients.urls")),
     path("invoices/", include("invoices.urls")),
-    path("dashboard/", account_views.dashboard, name="dashboard"),
+    path("dashboard/", invoice_views.dashboard, name="dashboard"),
     path("", account_views.home, name="home"),
 ]

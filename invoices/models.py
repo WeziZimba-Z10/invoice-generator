@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 from django.conf import settings
@@ -59,6 +60,16 @@ class Invoice(models.Model):
     @property
     def total(self):
         return self.subtotal + self.tax_amount
+
+    @property
+    def is_overdue(self):
+        return self.status == self.Status.SENT and self.due_date < date.today()
+
+    @property
+    def status_label(self):
+        if self.is_overdue:
+            return "Overdue"
+        return self.get_status_display()
 
 
 class LineItem(models.Model):

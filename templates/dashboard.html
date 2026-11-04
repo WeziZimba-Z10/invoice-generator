@@ -4,8 +4,83 @@
 
 {% block content %}
   <h1>Dashboard</h1>
-  <p>Hello, {{ user.username }}. Your invoices will appear here.</p>
-  <p><a href="{% url 'client_list' %}">Manage clients</a></p>
-  <p><a href="{% url 'invoice_list' %}">Manage invoices</a></p>
-  <p><a href="{% url 'home' %}">Home</a></p>
+  <p>
+    <a href="{% url 'invoice_create' %}">New invoice</a> |
+    <a href="{% url 'invoice_list' %}">All invoices</a> |
+    <a href="{% url 'client_list' %}">Clients ({{ client_count }})</a> |
+    <a href="{% url 'home' %}">Home</a>
+  </p>
+
+  <h2>Summary</h2>
+  <table>
+    <tr>
+      <th>Outstanding (sent, not yet paid)</th>
+      <td>{{ outstanding_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th>Of which overdue</th>
+      <td>{{ overdue_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th>Paid</th>
+      <td>{{ paid_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th>Drafts</th>
+      <td>{{ draft_count }}</td>
+    </tr>
+  </table>
+
+  <h2>Overdue invoices</h2>
+  {% if overdue_invoices %}
+    <table>
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Client</th>
+          <th>Due</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in overdue_invoices %}
+          <tr>
+            <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
+            <td>{{ invoice.client.name }}</td>
+            <td>{{ invoice.due_date }}</td>
+            <td>{{ invoice.total|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><a href="{% url 'invoice_list' %}?status=overdue">View all overdue</a></p>
+  {% else %}
+    <p>Nothing overdue.</p>
+  {% endif %}
+
+  <h2>Recent invoices</h2>
+  {% if recent_invoices %}
+    <table>
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Client</th>
+          <th>Status</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invoice in recent_invoices %}
+          <tr>
+            <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
+            <td>{{ invoice.client.name }}</td>
+            <td>{{ invoice.status_label }}</td>
+            <td>{{ invoice.total|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No invoices yet. <a href="{% url 'invoice_create' %}">Create your first one.</a></p>
+  {% endif %}
 {% endblock %}
