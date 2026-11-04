@@ -3,8 +3,9 @@ from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from .forms import InvoiceForm, LineItemFormSet
+from .forms import InvoiceForm, LineItemEditFormSet, LineItemFormSet
 from .models import Invoice
 
 
@@ -58,3 +59,44 @@ def invoice_create(request):
         "invoices/invoice_form.html",
         {"form": form, "formset": formset, "title": "New invoice"},
     )
+
+
+@login_required
+def invoice_update(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk, owner=request.user)
+    if request.method == "POST":
+        form = InvoiceForm(request.POST, instance=invoice, user=request.user)
+        formset = LineItemEditFormSet(request.POST, instance=invoice)
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                formset.save()
+            return redirect("invoice_detail", pk=invoice.pk)
+    else:
+        form = InvoiceForm(instance=invoice, user=request.user)
+        formset = LineItemEditFormSet(instance=invoice)
+    return render(
+        request,
+        "invoices/invoice_form.html",
+        {"form": form, "formset": formset, "title": f"Edit invoice {invoice.number}"},
+    )
+
+
+@login_required
+def invoice_delete(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk, owner=request.user)
+    if request.method == "POST":
+        invoice.delete()
+        return redirect("invoice_list")
+    return render(request, "invoices/invoice_confirm_delete.html", {"invoice": invoice})
+
+
+@login_required
+@require_POST
+def invoice_set_status(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk, owner=request.user)
+    new_status = request.POST.get("status")
+    if new_status in Invoice.Status.values:
+        invoice.status = new_status
+        invoice.save(update_fields=["status"])
+    return redirect("invoice_detail", pk=invoice.pk)

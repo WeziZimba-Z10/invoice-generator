@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Delete invoice{% endblock %}
+
+{% block content %}
+  <h1>Delete invoice</h1>
+  <p>
+    Are you sure you want to delete invoice <strong>{{ invoice.number }}</strong>
+    for {{ invoice.client.name }}? This also deletes its line items.
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'invoice_detail' invoice.pk %}">Cancel</a>
+  </form>
+{% endblock %}

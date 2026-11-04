@@ -1,3 +1,5 @@
+from django.contrib import messages
+from django.db.models import ProtectedError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -46,6 +48,13 @@ def client_update(request, pk):
 def client_delete(request, pk):
     client = get_object_or_404(Client, pk=pk, owner=request.user)
     if request.method == "POST":
-        client.delete()
+        try:
+            client.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "This client has invoices, so it can't be deleted. "
+                "Delete those invoices or move them to another client first.",
+            )
         return redirect("client_list")
     return render(request, "clients/client_confirm_delete.html", {"client": client})

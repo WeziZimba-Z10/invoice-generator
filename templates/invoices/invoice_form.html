@@ -17,6 +17,7 @@
           <th>Description</th>
           <th>Quantity</th>
           <th>Unit price</th>
+          <th>{% if formset.can_delete %}Delete{% endif %}</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +30,7 @@
             </td>
             <td>{{ item_form.quantity.errors }}{{ item_form.quantity }}</td>
             <td>{{ item_form.unit_price.errors }}{{ item_form.unit_price }}</td>
+            <td>{% if item_form.DELETE %}{{ item_form.DELETE }}{% endif %}</td>
           </tr>
         {% endfor %}
       </tbody>

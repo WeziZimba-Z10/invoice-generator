@@ -4,7 +4,34 @@
 
 {% block content %}
   <h1>Invoice {{ invoice.number }}</h1>
-  <p><a href="{% url 'invoice_list' %}">Back to invoices</a></p>
+    <p>
+    <a href="{% url 'invoice_list' %}">Back to invoices</a> |
+    <a href="{% url 'invoice_update' invoice.pk %}">Edit</a> |
+    <a href="{% url 'invoice_delete' invoice.pk %}">Delete</a>
+  </p>
+
+  <div>
+    {% if invoice.status == 'draft' %}
+      <form method="post" action="{% url 'invoice_set_status' invoice.pk %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="sent">
+        <button type="submit">Mark as sent</button>
+      </form>
+    {% endif %}
+    {% if invoice.status != 'paid' %}
+      <form method="post" action="{% url 'invoice_set_status' invoice.pk %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="paid">
+        <button type="submit">Mark as paid</button>
+      </form>
+    {% else %}
+      <form method="post" action="{% url 'invoice_set_status' invoice.pk %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="sent">
+        <button type="submit">Mark as unpaid</button>
+      </form>
+    {% endif %}
+  </div>
 
   <p>
     <strong>Client:</strong> {{ invoice.client.name }}<br>

@@ -38,3 +38,13 @@ LineItemFormSet = inlineformset_factory(
     validate_min=True,
     can_delete=False,
 )
+
+LineItemEditFormSet = inlineformset_factory(
+    Invoice,
+    LineItem,
+    fields=["description", "quantity", "unit_price"],
+    extra=1,
+    min_num=1,
+    validate_min=True,
+    can_delete=True,
+)
