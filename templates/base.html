@@ -1,16 +1,35 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Invoice Generator{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="{% url 'home' %}">Invoice Generator</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'client_list' %}">Clients</a>
+        <a href="{% url 'invoice_list' %}">Invoices</a>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="link-button">Log out ({{ user.username }})</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Log in</a>
+        <a href="{% url 'register' %}">Register</a>
+      {% endif %}
+    </div>
+  </nav>
   <main>
-      {% if messages %}
-      <ul>
+    {% if messages %}
+      <ul class="messages">
         {% for message in messages %}
-          <li>{{ message }}</li>
+          <li class="{{ message.tags }}">{{ message }}</li>
         {% endfor %}
       </ul>
     {% endif %}
