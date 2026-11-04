@@ -37,7 +37,7 @@
     <strong>Client:</strong> {{ invoice.client.name }}<br>
     <strong>Issued:</strong> {{ invoice.issue_date }}<br>
     <strong>Due:</strong> {{ invoice.due_date }}<br>
-    <strong>Status:</strong> {{ invoice.status_label }}
+    <strong>Status:</strong> <span class="badge badge-{{ invoice.status_label|lower }}">{{ invoice.status_label }}</span>
   </p>
 
   <table>
