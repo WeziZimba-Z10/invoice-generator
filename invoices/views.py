@@ -3,13 +3,16 @@ from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from accounts.models import get_profile
 from clients.models import Client
 
 from .forms import InvoiceForm, LineItemEditFormSet, LineItemFormSet
 from .models import Invoice
+from .pdf import build_invoice_pdf
 
 
 def generate_invoice_number(owner):
@@ -19,8 +22,12 @@ def generate_invoice_number(owner):
     return f"INV-{count:04d}"
 
 
-def sum_totals(invoices):
-    return sum((invoice.total for invoice in invoices), Decimal("0.00"))
+def totals_by_currency(invoices):
+    totals = {}
+    for invoice in invoices:
+        current = totals.get(invoice.currency, Decimal("0.00"))
+        totals[invoice.currency] = current + invoice.total
+    return sorted(totals.items())
 
 
 @login_required
@@ -37,9 +44,9 @@ def dashboard(request):
     drafts = [i for i in invoices if i.status == Invoice.Status.DRAFT]
 
     context = {
-        "outstanding_total": sum_totals(outstanding),
-        "overdue_total": sum_totals(overdue),
-        "paid_total": sum_totals(paid),
+        "outstanding_totals": totals_by_currency(outstanding),
+        "overdue_totals": totals_by_currency(overdue),
+        "paid_totals": totals_by_currency(paid),
         "draft_count": len(drafts),
         "overdue_invoices": sorted(overdue, key=lambda i: i.due_date),
         "recent_invoices": invoices[:5],
@@ -94,7 +101,11 @@ def invoice_create(request):
         today = date.today()
         form = InvoiceForm(
             user=request.user,
-            initial={"issue_date": today, "due_date": today + timedelta(days=30)},
+            initial={
+                "issue_date": today,
+                "due_date": today + timedelta(days=30),
+                "currency": get_profile(request.user).default_currency,
+            },
         )
         formset = LineItemFormSet()
     return render(
@@ -143,3 +154,13 @@ def invoice_set_status(request, pk):
         invoice.status = new_status
         invoice.save(update_fields=["status"])
     return redirect("invoice_detail", pk=invoice.pk)
+
+
+@login_required
+def invoice_pdf(request, pk):
+    queryset = Invoice.objects.select_related("client", "owner").prefetch_related("items")
+    invoice = get_object_or_404(queryset, pk=pk, owner=request.user)
+    pdf_bytes = build_invoice_pdf(invoice)
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{invoice.number}.pdf"'
+    return response

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import models
 
 from clients.models import Client
+from config.currencies import CURRENCY_CHOICES, DEFAULT_CURRENCY
 
 
 class Invoice(models.Model):
@@ -24,6 +25,11 @@ class Invoice(models.Model):
         related_name="invoices",
     )
     number = models.CharField(max_length=20)
+    currency = models.CharField(
+        max_length=3,
+        choices=CURRENCY_CHOICES,
+        default=DEFAULT_CURRENCY,
+    )
     issue_date = models.DateField()
     due_date = models.DateField()
     status = models.CharField(

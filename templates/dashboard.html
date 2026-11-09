@@ -15,15 +15,33 @@
   <table>
     <tr>
       <th>Outstanding (sent, not yet paid)</th>
-      <td>{{ outstanding_total|floatformat:2 }}</td>
+      <td>
+        {% for currency, amount in outstanding_totals %}
+          {{ currency }} {{ amount|floatformat:2 }}{% if not forloop.last %}<br>{% endif %}
+        {% empty %}
+          0.00
+        {% endfor %}
+      </td>
     </tr>
     <tr>
       <th>Of which overdue</th>
-      <td>{{ overdue_total|floatformat:2 }}</td>
+      <td>
+        {% for currency, amount in overdue_totals %}
+          {{ currency }} {{ amount|floatformat:2 }}{% if not forloop.last %}<br>{% endif %}
+        {% empty %}
+          0.00
+        {% endfor %}
+      </td>
     </tr>
     <tr>
       <th>Paid</th>
-      <td>{{ paid_total|floatformat:2 }}</td>
+      <td>
+        {% for currency, amount in paid_totals %}
+          {{ currency }} {{ amount|floatformat:2 }}{% if not forloop.last %}<br>{% endif %}
+        {% empty %}
+          0.00
+        {% endfor %}
+      </td>
     </tr>
     <tr>
       <th>Drafts</th>
@@ -48,7 +66,7 @@
             <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
             <td>{{ invoice.client.name }}</td>
             <td>{{ invoice.due_date }}</td>
-            <td>{{ invoice.total|floatformat:2 }}</td>
+            <td>{{ invoice.currency }} {{ invoice.total|floatformat:2 }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -74,8 +92,8 @@
           <tr>
             <td><a href="{% url 'invoice_detail' invoice.pk %}">{{ invoice.number }}</a></td>
             <td>{{ invoice.client.name }}</td>
-            <td>{{ invoice.status_label }}</td>
-            <td>{{ invoice.total|floatformat:2 }}</td>
+            <td><span class="badge badge-{{ invoice.status_label|lower }}">{{ invoice.status_label }}</span></td>
+            <td>{{ invoice.currency }} {{ invoice.total|floatformat:2 }}</td>
           </tr>
         {% endfor %}
       </tbody>

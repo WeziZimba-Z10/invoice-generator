@@ -15,6 +15,7 @@
         <a href="{% url 'dashboard' %}">Dashboard</a>
         <a href="{% url 'client_list' %}">Clients</a>
         <a href="{% url 'invoice_list' %}">Invoices</a>
+        <a href="{% url 'account_settings' %}">Settings</a>
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button type="submit" class="link-button">Log out ({{ user.username }})</button>
