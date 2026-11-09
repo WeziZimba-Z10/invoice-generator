@@ -9,7 +9,15 @@ from .models import Invoice, LineItem
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ["client", "issue_date", "due_date", "status", "tax_rate", "notes"]
+        fields = [
+            "client",
+            "currency",
+            "issue_date",
+            "due_date",
+            "status",
+            "tax_rate",
+            "notes",
+        ]
         widgets = {
             "issue_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "due_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
